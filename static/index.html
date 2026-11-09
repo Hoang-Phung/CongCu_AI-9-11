@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Demo Web App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #009688;
+            --primary-dark: #00796b;
+            --primary-light: #e0f2f1;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --get-color: #0284c7;
+            --post-color: #16a34a;
+            --put-color: #d97706;
+            --delete-color: #dc2626;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 24px 16px 48px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px 28px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-badge {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .brand h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .doc-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-link.swagger {
+            background-color: #059669;
+            color: white;
+        }
+        .btn-link.swagger:hover { background-color: #047857; }
+
+        .btn-link.redoc {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-link.redoc:hover { background-color: #1d4ed8; }
+
+        /* Method Cards Bar */
+        .methods-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .method-tag {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            font-size: 0.88rem;
+        }
+
+        .badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: white;
+            min-width: 58px;
+            text-align: center;
+        }
+        .badge-get { background-color: var(--get-color); }
+        .badge-post { background-color: var(--post-color); }
+        .badge-put { background-color: var(--put-color); }
+        .badge-delete { background-color: var(--delete-color); }
+
+        /* Main Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.15);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+        }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: var(--delete-color);
+        }
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        /* Items list */
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .item-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            background: #fafafa;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .item-card:hover {
+            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.06);
+            transform: translateY(-1px);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .item-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .item-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #475569;
+        }
+
+        .item-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+        }
+
+        .item-price {
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .stock-tag {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .in-stock { background: #dcfce7; color: #166534; }
+        .out-of-stock { background: #fee2e2; color: #991b1b; }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Console / Inspector */
+        .inspector-card {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 20px 24px;
+        }
+
+        .inspector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+        }
+
+        .inspector-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .code-box {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            max-height: 250px;
+            color: #38bdf8;
+            white-space: pre-wrap;
+        }
+
+        .status-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .status-2xx { background: #15803d; color: #f0fdf4; }
+        .status-4xx { background: #b91c1c; color: #fef2f2; }
+
+        .empty-state {
+            text-align: center;
+            padding: 36px 12px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <div class="brand-badge">⚡ FastAPI</div>
+                <div>
+                    <h1>Hệ Thống Quản Lý Sản Phẩm (Demo CRUD)</h1>
+                    <p style="font-size: 0.82rem; color: var(--text-muted);">Minh họa đầy đủ các phương thức HTTP cơ bản của FastAPI</p>
+                </div>
+            </div>
+            <div class="doc-links">
+                <a href="/docs" target="_blank" class="btn-link swagger">📖 Swagger UI</a>
+                <a href="/redoc" target="_blank" class="btn-link redoc">📑 ReDoc</a>
+            </div>
+        </header>
+
+        <!-- Methods Info Bar -->
+        <div class="methods-bar">
+            <div class="method-tag">
+                <span class="badge badge-get">GET</span>
+                <span><code>/api/items</code> Lấy danh sách</span>
+            </div>
+            <div class="method-tag">
+                <span class="badge badge-post">POST</span>
+                <span><code>/api/items</code> Thêm mới</span>
+            </div>
+            <div class="method-tag">
+                <span class="badge badge-put">PUT</span>
+                <span><code>/api/items/{id}</code> Cập nhật</span>
+            </div>
+            <div class="method-tag">
+                <span class="badge badge-delete">DELETE</span>
+                <span><code>/api/items/{id}</code> Xóa</span>
+            </div>
+        </div>
+
+        <!-- Main Content 2 Columns -->
+        <div class="grid-2">
+            <!-- Form Card (POST / PUT) -->
+            <div class="card">
+                <div class="card-title">
+                    <span id="form-heading">Thêm Sản Phẩm Mới (POST)</span>
+                    <button id="cancel-edit-btn" class="btn btn-sm btn-outline-primary" style="display: none;" onclick="cancelEdit()">Hủy sửa</button>
+                </div>
+                <form id="item-form" onsubmit="handleFormSubmit(event)">
+                    <input type="hidden" id="item-id">
+                    
+                    <div class="form-group">
+                        <label for="item-name">Tên sản phẩm *</label>
+                        <input type="text" id="item-name" required placeholder="Ví dụ: Bàn phím cơ không dây">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="item-price">Giá (VNĐ) *</label>
+                        <input type="number" id="item-price" required step="1000" min="0" placeholder="Ví dụ: 1250000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="item-desc">Mô tả chi tiết</label>
+                        <textarea id="item-desc" rows="3" placeholder="Mô tả các đặc điểm nổi bật của sản phẩm..."></textarea>
+                    </div>
+
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="item-in-stock" checked>
+                        <span>Còn hàng trong kho (In Stock)</span>
+                    </label>
+
+                    <button type="submit" id="submit-btn" class="btn btn-primary">
+                        <span id="submit-btn-text">🚀 Gửi yêu cầu POST</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- List Card (GET) -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Danh Sách Sản Phẩm (GET)</span>
+                    <button class="btn btn-sm btn-outline-primary" onclick="fetchItems()">🔄 Làm mới</button>
+                </div>
+
+                <div class="filter-bar">
+                    <input type="text" id="search-input" placeholder="Tìm theo tên sản phẩm..." oninput="fetchItems()">
+                </div>
+
+                <div class="items-list" id="items-list">
+                    <div class="empty-state">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inspector / Console -->
+        <div class="inspector-card">
+            <div class="inspector-header">
+                <div class="inspector-title">
+                    <span>⚡ API Response Inspector</span>
+                    <span id="last-method-badge" class="badge badge-get">GET</span>
+                    <span id="last-endpoint" style="color: #94a3b8;">/api/items</span>
+                </div>
+                <div id="status-pill" class="status-pill status-2xx">200 OK</div>
+            </div>
+            <pre class="code-box" id="response-box">// Kết quả phản hồi JSON từ FastAPI server sẽ hiển thị tại đây</pre>
+        </div>
+    </div>
+
+    <script>
+        let currentEditId = null;
+
+        // Fetch and display items (GET method)
+        async function fetchItems() {
+            const searchQuery = document.getElementById('search-input').value.trim();
+            const endpoint = searchQuery 
+                ? `/api/items?search=${encodeURIComponent(searchQuery)}`
+                : '/api/items';
+
+            try {
+                const startTime = performance.now();
+                const res = await fetch(endpoint);
+                const data = await res.json();
+                const duration = Math.round(performance.now() - startTime);
+
+                updateInspector('GET', endpoint, res.status, data, duration);
+                renderItems(data);
+            } catch (err) {
+                console.error(err);
+                updateInspector('GET', endpoint, 500, { error: err.message }, 0);
+            }
+        }
+
+        function renderItems(items) {
+            const container = document.getElementById('items-list');
+            if (!items || items.length === 0) {
+                container.innerHTML = `<div class="empty-state">Chưa có sản phẩm nào. Hãy tạo một sản phẩm mới ở biểu mẫu bên cạnh!</div>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-header">
+                        <span class="item-title">${escapeHtml(item.name)}</span>
+                        <span class="item-id">ID: #${item.id}</span>
+                    </div>
+                    <div class="item-desc">${escapeHtml(item.description || 'Không có mô tả')}</div>
+                    <div class="item-footer">
+                        <div>
+                            <span class="item-price">${Number(item.price).toLocaleString('vi-VN')} đ</span>
+                            <span class="stock-tag ${item.in_stock ? 'in-stock' : 'out-of-stock'}">
+                                ${item.in_stock ? '● Còn hàng' : '○ Hết hàng'}
+                            </span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="prepareEdit(${item.id})">Sửa (PUT)</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">Xóa (DELETE)</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Form Submit: Handles POST (Create) or PUT (Update)
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('item-name').value.trim();
+            const price = parseFloat(document.getElementById('item-price').value);
+            const description = document.getElementById('item-desc').value.trim();
+            const in_stock = document.getElementById('item-in-stock').checked;
+
+            const payload = { name, price, description, in_stock };
+
+            if (currentEditId) {
+                // PUT update
+                const endpoint = `/api/items/${currentEditId}`;
+                const startTime = performance.now();
+                const res = await fetch(endpoint, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                const duration = Math.round(performance.now() - startTime);
+
+                updateInspector('PUT', endpoint, res.status, data, duration);
+                if (res.ok) {
+                    cancelEdit();
+                    fetchItems();
+                }
+            } else {
+                // POST create
+                const endpoint = '/api/items';
+                const startTime = performance.now();
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                const duration = Math.round(performance.now() - startTime);
+
+                updateInspector('POST', endpoint, res.status, data, duration);
+                if (res.ok) {
+                    resetForm();
+                    fetchItems();
+                }
+            }
+        }
+
+        // Prepare PUT Edit
+        async function prepareEdit(id) {
+            try {
+                const endpoint = `/api/items/${id}`;
+                const res = await fetch(endpoint);
+                const item = await res.json();
+                updateInspector('GET', endpoint, res.status, item, 0);
+
+                if (!res.ok) return;
+
+                currentEditId = id;
+                document.getElementById('item-id').value = id;
+                document.getElementById('item-name').value = item.name;
+                document.getElementById('item-price').value = item.price;
+                document.getElementById('item-desc').value = item.description || '';
+                document.getElementById('item-in-stock').checked = item.in_stock;
+
+                document.getElementById('form-heading').innerText = `Cập Nhật Sản Phẩm #${id} (PUT)`;
+                document.getElementById('submit-btn-text').innerText = '💾 Lưu Cập Nhật (PUT)';
+                document.getElementById('cancel-edit-btn').style.display = 'inline-flex';
+                document.getElementById('item-name').focus();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function cancelEdit() {
+            currentEditId = null;
+            resetForm();
+            document.getElementById('form-heading').innerText = 'Thêm Sản Phẩm Mới (POST)';
+            document.getElementById('submit-btn-text').innerText = '🚀 Gửi yêu cầu POST';
+            document.getElementById('cancel-edit-btn').style.display = 'none';
+        }
+
+        function resetForm() {
+            document.getElementById('item-form').reset();
+            document.getElementById('item-id').value = '';
+            document.getElementById('item-in-stock').checked = true;
+        }
+
+        // DELETE Item
+        async function deleteItem(id) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa sản phẩm #${id}?`)) return;
+
+            const endpoint = `/api/items/${id}`;
+            const startTime = performance.now();
+            const res = await fetch(endpoint, { method: 'DELETE' });
+            const data = await res.json();
+            const duration = Math.round(performance.now() - startTime);
+
+            updateInspector('DELETE', endpoint, res.status, data, duration);
+            if (res.ok) {
+                if (currentEditId === id) cancelEdit();
+                fetchItems();
+            }
+        }
+
+        // Update the inspector display
+        function updateInspector(method, endpoint, statusCode, responseData, duration) {
+            const badge = document.getElementById('last-method-badge');
+            badge.innerText = method;
+            badge.className = `badge badge-${method.toLowerCase()}`;
+
+            document.getElementById('last-endpoint').innerText = endpoint + (duration ? ` (${duration}ms)` : '');
+
+            const pill = document.getElementById('status-pill');
+            pill.innerText = `${statusCode} ${statusCode < 300 ? 'OK' : (statusCode === 404 ? 'Not Found' : 'Error')}`;
+            pill.className = `status-pill ${statusCode < 300 ? 'status-2xx' : 'status-4xx'}`;
+
+            document.getElementById('response-box').textContent = JSON.stringify(responseData, null, 2);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+
+        // Load initially
+        fetchItems();
+    </script>
+</body>
+</html>
